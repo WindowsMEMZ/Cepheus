@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct CepheusKeyboardEmojiView: View {
-  
   //Isolation
   //Don't do structure modifications without safety protection.
   //Better update via automatic programms
@@ -174,53 +173,126 @@ struct CepheusKeyboardEmojiView: View {
                       Text(emojiGroupExamples[0] ?? "🕙")
                       Text("Emoji.group.recents", bundle: Bundle.module)
                     }
-                  })
                 }
-                ForEach(1...10, id: \.self) { group in
-                  if group != 3 {
-                    NavigationLink(destination: {
-                      List {
-                        ForEach(0..<(emojiSubgroupNames[group]?.count ?? 1), id: \.self) { subgroup in
-                          NavigationLink(destination: {
-                            ScrollView {
-                              LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]) {
-                                ForEach(0...(cepheusEmojiDictionary[group]?[subgroup+1]?.count ?? 1), id: \.self) { emoji in
-                                  if (emoji-1)%4 == 0 {
-                                    Button(action: {
-                                      textField = CepheusKeyboardAddLetter(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji-1) as? String ?? "", textField: textField, cursor: cursor)
-                                      recentUsedEmojis = addEmojiToRecents(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji-1) as? String ?? "")
-                                      cursor += 1
+                .tabViewStyle(.verticalPage)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: {
+                            dismiss()
+                        }, label: {
+                            Image(systemName: "checkmark")
+                        })
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationLink(destination: {
+                            List {
+                                if !recentUsedEmojis.isEmpty {
+                                    NavigationLink(destination: {
+                                        ScrollView {
+                                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]) {
+                                                ForEach(0..<recentUsedEmojis.count, id: \.self) { emoji in
+                                                    if (emoji-1)%4 == 0 {
+                                                        Button(action: {
+                                                            textField = CepheusKeyboardAddLetter(arraySafeAccess(recentUsedEmojis, element: emoji-1) as? String ?? "", textField: textField, cursor: cursor)
+                                                            cursor += 1
+                                                        }, label: {
+                                                            Text(arraySafeAccess(recentUsedEmojis, element: emoji-1) as? String ?? "")
+                                                                .font(.system(size: screenWidth/6))
+                                                        }).buttonStyle(.plain)
+                                                        Button(action: {
+                                                            textField = CepheusKeyboardAddLetter(arraySafeAccess(recentUsedEmojis, element: emoji+0) as? String ?? "", textField: textField, cursor: cursor)
+                                                            cursor += 1
+                                                        }, label: {
+                                                            Text(arraySafeAccess(recentUsedEmojis, element: emoji+0) as? String ?? "")
+                                                                .font(.system(size: screenWidth/6))
+                                                        }).buttonStyle(.plain)
+                                                        Button(action: {
+                                                            textField = CepheusKeyboardAddLetter(arraySafeAccess(recentUsedEmojis, element: emoji+1) as? String ?? "", textField: textField, cursor: cursor)
+                                                            cursor += 1
+                                                        }, label: {
+                                                            Text(arraySafeAccess(recentUsedEmojis, element: emoji+1) as? String ?? "")
+                                                                .font(.system(size: screenWidth/6))
+                                                        }).buttonStyle(.plain)
+                                                        Button(action: {
+                                                            textField = CepheusKeyboardAddLetter(arraySafeAccess(recentUsedEmojis, element: emoji+2) as? String ?? "", textField: textField, cursor: cursor)
+                                                            cursor += 1
+                                                        }, label: {
+                                                            Text(arraySafeAccess(recentUsedEmojis, element: emoji+2) as? String ?? "")
+                                                                .font(.system(size: screenWidth/6))
+                                                        }).buttonStyle(.plain)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .navigationTitle(Text("Emoji.group.recents", bundle: .module))
                                     }, label: {
-                                      Text(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji-1) as? String ?? "")
-                                        .font(.system(size: screenWidth/6))
-                                    }).buttonStyle(.plain)
-                                    Button(action: {
-                                      textField = CepheusKeyboardAddLetter(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+0) as? String ?? "", textField: textField, cursor: cursor)
-                                      recentUsedEmojis = addEmojiToRecents(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+0) as? String ?? "")
-                                      cursor += 1
-                                    }, label: {
-                                      Text(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+0) as? String ?? "")
-                                        .font(.system(size: screenWidth/6))
-                                    }).buttonStyle(.plain)
-                                    Button(action: {
-                                      textField = CepheusKeyboardAddLetter(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+1) as? String ?? "", textField: textField, cursor: cursor)
-                                      recentUsedEmojis = addEmojiToRecents(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+1) as? String ?? "")
-                                      cursor += 1
-                                    }, label: {
-                                      Text(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+1) as? String ?? "")
-                                        .font(.system(size: screenWidth/6))
-                                    }).buttonStyle(.plain)
-                                    Button(action: {
-                                      textField = CepheusKeyboardAddLetter(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+2) as? String ?? "", textField: textField, cursor: cursor)
-                                      recentUsedEmojis = addEmojiToRecents(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+2) as? String ?? "")
-                                      cursor += 1
-                                    }, label: {
-                                      Text(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+2) as? String ?? "")
-                                        .font(.system(size: screenWidth/6))
-                                    }).buttonStyle(.plain)
-                                  }
+                                        HStack {
+                                            Text(emojiGroupExamples[0] ?? "🕙")
+                                            Text("Emoji.group.recents", bundle: .module)
+                                        }
+                                    })
                                 }
-                              }
+                                ForEach(1...10, id: \.self) { group in
+                                    if group != 3 {
+                                        NavigationLink(destination: {
+                                            List {
+                                                ForEach(0..<(emojiSubgroupNames[group]?.count ?? 1), id: \.self) { subgroup in
+                                                    NavigationLink(destination: {
+                                                        ScrollView {
+                                                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]) {
+                                                                ForEach(0...(cepheusEmojiDictionary[group]?[subgroup+1]?.count ?? 1), id: \.self) { emoji in
+                                                                    if (emoji-1)%4 == 0 {
+                                                                        Button(action: {
+                                                                            textField = CepheusKeyboardAddLetter(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji-1) as? String ?? "", textField: textField, cursor: cursor)
+                                                                            recentUsedEmojis = addEmojiToRecents(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji-1) as? String ?? "")
+                                                                            cursor += 1
+                                                                        }, label: {
+                                                                            Text(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji-1) as? String ?? "")
+                                                                                .font(.system(size: screenWidth/6))
+                                                                        }).buttonStyle(.plain)
+                                                                        Button(action: {
+                                                                            textField = CepheusKeyboardAddLetter(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+0) as? String ?? "", textField: textField, cursor: cursor)
+                                                                            recentUsedEmojis = addEmojiToRecents(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+0) as? String ?? "")
+                                                                            cursor += 1
+                                                                        }, label: {
+                                                                            Text(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+0) as? String ?? "")
+                                                                                .font(.system(size: screenWidth/6))
+                                                                        }).buttonStyle(.plain)
+                                                                        Button(action: {
+                                                                            textField = CepheusKeyboardAddLetter(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+1) as? String ?? "", textField: textField, cursor: cursor)
+                                                                            recentUsedEmojis = addEmojiToRecents(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+1) as? String ?? "")
+                                                                            cursor += 1
+                                                                        }, label: {
+                                                                            Text(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+1) as? String ?? "")
+                                                                                .font(.system(size: screenWidth/6))
+                                                                        }).buttonStyle(.plain)
+                                                                        Button(action: {
+                                                                            textField = CepheusKeyboardAddLetter(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+2) as? String ?? "", textField: textField, cursor: cursor)
+                                                                            recentUsedEmojis = addEmojiToRecents(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+2) as? String ?? "")
+                                                                            cursor += 1
+                                                                        }, label: {
+                                                                            Text(arraySafeAccess(cepheusEmojiDictionary[group]?[subgroup+1] ?? [], element: emoji+2) as? String ?? "")
+                                                                                .font(.system(size: screenWidth/6))
+                                                                        }).buttonStyle(.plain)
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        .navigationTitle(Text(arraySafeAccess(emojiSubgroupNames[group] ?? [], element: subgroup) as? LocalizedStringResource ?? LocalizedStringResource("Emoji.subgroup.unknown", bundle: .atURL(Bundle.module.bundleURL))))
+                                                    }, label: {
+                                                        Text(arraySafeAccess(emojiSubgroupNames[group] ?? [], element: subgroup) as? LocalizedStringResource ?? LocalizedStringResource("Emoji.subgroup.unknown", bundle: .atURL(Bundle.module.bundleURL)))
+                                                    })
+                                                }
+                                            }
+                                            .navigationTitle(Text(emojiGroupNames[group] ?? LocalizedStringResource("Emoji.group.unknown", bundle: .atURL(Bundle.module.bundleURL))))
+                                        }, label: {
+                                            HStack {
+                                                Text(emojiGroupExamples[group] ?? "❓")
+                                                Text(emojiGroupNames[group] ?? LocalizedStringResource("Emoji.group.unknown", bundle: .atURL(Bundle.module.bundleURL)))
+                                            }
+                                        })
+                                    }
+                                }
                             }
                             .navigationTitle(Text(arraySafeAccess(emojiSubgroupNames[group] ?? [], element: subgroup) as? LocalizedStringResource ?? LocalizedStringResource("Emoji.subgroup.unknown", bundle: .atURL(Bundle.module.bundleURL))))
                           }, label: {
@@ -292,9 +364,9 @@ struct CepheusKeyboardEmojiView: View {
 }
 
 func wholeGroup(_ dictionary: [Int: [String]]) -> [String] {
-  var output: [String] = []
-  for subgroup in 1...20 {
-    output += dictionary[subgroup] ?? []
-  }
-  return output
+    var output: [String] = []
+    for subgroup in 1...20 {
+        output += dictionary[subgroup] ?? []
+    }
+    return output
 }
