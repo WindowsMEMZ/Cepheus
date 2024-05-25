@@ -9,264 +9,217 @@ import SwiftUI
 //import Speech
 let screenWidth = WKInterfaceDevice.current().screenBounds.size.width
 let screenHeight = WKInterfaceDevice.current().screenBounds.size.height
+//public let CepheusGlobalLocalizedByKeyboardLanguage = CepheusLocalizedByKeyboardLanguage
 
-public struct CepheusKeyboard: View {
-    //Configurations
-    public var input: Binding<String>
-    public var prompt: LocalizedStringKey?
-    public var stringPrompt: String?
-    public var CepheusIsEnabled: Bool = true
-    public var defaultLanguage: String =  "en-qwerty"
-    public var languageDisallowRules: String = "none" //none, deny-all, deny-Latin, deny-CJK, English-only
-    public var allowEmojis: Bool = true
-    public var isSecure: Bool = false
-    public var displayingSecureTextIsAllowed: Bool = true
-    public var autoCorrectionIsEnabled: Bool = true
-    public var onSubmit: () -> Void = {}
-    
-    @State var CepheusKeyboardIsDisplaying = false
-    @State var dottedText = ""
-    /// <#Description#>
-    /// - Parameters:
-    ///   - input: <#input description#>
-    ///   - prompt: <#prompt description#>
-    ///   - CepheusIsEnabled: <#CepheusIsEnabled description#>
-    ///   - defaultLanguage: <#defaultLanguage description#>
-    ///   - languageDisallowRules: <#languageDisallowRules description#>
-    ///   - allowEmojis: <#allowEmojis description#>
-    ///   - isSecure: <#isSecure description#>
-    ///   - displayingSecureTextIsAllowed: <#displayingSecureTextIsAllowed description#>
-    ///   - CepheusKeyboardIsDisplaying: <#CepheusKeyboardIsDisplaying description#>
-    ///   - dottedText: <#dottedText description#>
-    ///   - autoCorrectionIsEnabled: <#autoCorrectionIsEnabled description#>
-    ///   - onSubmit: <#onSubmit description#>
-    public init(input: Binding<String>, prompt: LocalizedStringKey = LocalizedStringKey("Cepheus.prompt"), CepheusIsEnabled: Bool = true, defaultLanguage: String = "en-qwerty", languageDisallowRules: String = "none", allowEmojis: Bool = true, isSecure: Bool = false, displayingSecureTextIsAllowed: Bool = true, CepheusKeyboardIsDisplaying: Bool = false, dottedText: String = "", autoCorrectionIsEnabled: Bool = true, onSubmit: @escaping () -> Void = {}) {
-        self.input = input
-        self.prompt = prompt
-        self.CepheusIsEnabled = CepheusIsEnabled
-        self.defaultLanguage = defaultLanguage
-        self.languageDisallowRules = languageDisallowRules
-        self.allowEmojis = allowEmojis
-        self.isSecure = isSecure
-        self.displayingSecureTextIsAllowed = displayingSecureTextIsAllowed
-        self.CepheusKeyboardIsDisplaying = CepheusKeyboardIsDisplaying
-        self.dottedText = dottedText
-        self.autoCorrectionIsEnabled = autoCorrectionIsEnabled
-        self.onSubmit = onSubmit
-    }
-    /// <#Description#>
-    /// - Parameters:
-    ///   - input: <#input description#>
-    ///   - prompt: <#prompt description#>
-    ///   - CepheusIsEnabled: <#CepheusIsEnabled description#>
-    ///   - defaultLanguage: <#defaultLanguage description#>
-    ///   - languageDisallowRules: <#languageDisallowRules description#>
-    ///   - allowEmojis: <#allowEmojis description#>
-    ///   - isSecure: <#isSecure description#>
-    ///   - displayingSecureTextIsAllowed: <#displayingSecureTextIsAllowed description#>
-    ///   - CepheusKeyboardIsDisplaying: <#CepheusKeyboardIsDisplaying description#>
-    ///   - dottedText: <#dottedText description#>
-    ///   - autoCorrectionIsEnabled: <#autoCorrectionIsEnabled description#>
-    ///   - onSubmit: <#onSubmit description#>
-    @_disfavoredOverload public init(input: Binding<String>, prompt: String = String(localized: "Cepheus.prompt"), CepheusIsEnabled: Bool = true, defaultLanguage: String = "en-qwerty", languageDisallowRules: String = "none", allowEmojis: Bool = true, isSecure: Bool = false, displayingSecureTextIsAllowed: Bool = true, CepheusKeyboardIsDisplaying: Bool = false, dottedText: String = "", autoCorrectionIsEnabled: Bool = true, onSubmit: @escaping () -> Void = {}) {
-        self.input = input
-        self.stringPrompt = prompt
-        self.CepheusIsEnabled = CepheusIsEnabled
-        self.defaultLanguage = defaultLanguage
-        self.languageDisallowRules = languageDisallowRules
-        self.allowEmojis = allowEmojis
-        self.isSecure = isSecure
-        self.displayingSecureTextIsAllowed = displayingSecureTextIsAllowed
-        self.CepheusKeyboardIsDisplaying = CepheusKeyboardIsDisplaying
-        self.dottedText = dottedText
-        self.autoCorrectionIsEnabled = autoCorrectionIsEnabled
-        self.onSubmit = onSubmit
-    }
-    public var body: some View {
-        if CepheusIsEnabled {
-            if #available(watchOS 10.0, *) {
-                Button(action: {
-                    CepheusKeyboardIsDisplaying = true
-                }, label: {
-                    HStack {
-                        if input.wrappedValue.isEmpty {
-                            if let prompt {
-                                Text(prompt)
-                                    .foregroundStyle(.secondary)
-                            } else if let stringPrompt {
-                                Text(stringPrompt)
-                                    .foregroundStyle(.secondary)
-                            }
-                        } else {
-                            Text(isSecure ? dottedText : input.wrappedValue)
-                        }
-                        Spacer()
+public struct CepheusKeyboard<L: View>: View {
+  //Configurations
+  public var input: Binding<String>
+  public var prompt: LocalizedStringResource = LocalizedStringResource("Cepheus.prompt", bundle: .atURL(Bundle.module.bundleURL))
+  public var CepheusIsEnabled: Bool = true
+  public var style: String = "field"
+  public var defaultLanguage: String =  "en-qwerty"
+  public var languageDisallowRules: String = "none" //none, deny-all, deny-Latin, deny-CJK, English-only
+  public var allowEmojis: Bool = true
+  public var isSecure: Bool = false
+  public var displayingSecureTextIsAllowed: Bool = true
+  public var autoCorrectionIsEnabled: Bool = true
+  public var onSubmit: () -> Void = {}
+  public var label: () -> L
+  
+  @State var CepheusKeyboardIsDisplaying = false
+  @State var dottedText = ""
+  @State var safeStyle = "field"
+  public init(input: Binding<String>, prompt: LocalizedStringResource = "Cepheus Keyboard", CepheusIsEnabled: Bool = true, style: String = "field", defaultLanguage: String = "en-qwerty", languageDisallowRules: String = "none", allowEmojis: Bool = true, isSecure: Bool = false, displayingSecureTextIsAllowed: Bool = true, CepheusKeyboardIsDisplaying: Bool = false, dottedText: String = "", autoCorrectionIsEnabled: Bool = true, onSubmit: @escaping () -> Void = {}, label: @escaping () -> L = {Text("Cepheus Keyboard")}) {
+    self.input = input
+    self.prompt = prompt
+    self.CepheusIsEnabled = CepheusIsEnabled
+    self.style = style
+    self.defaultLanguage = defaultLanguage
+    self.languageDisallowRules = languageDisallowRules
+    self.allowEmojis = allowEmojis
+    self.isSecure = isSecure
+    self.displayingSecureTextIsAllowed = displayingSecureTextIsAllowed
+    self.CepheusKeyboardIsDisplaying = CepheusKeyboardIsDisplaying
+    self.dottedText = dottedText
+    self.autoCorrectionIsEnabled = autoCorrectionIsEnabled
+    self.onSubmit = onSubmit
+    self.label = label
+  }
+  public var body: some View {
+    NavigationStack {
+      if CepheusIsEnabled {
+        if #available(watchOS 10.0, *) {
+          Group {
+            if safeStyle == "field" || safeStyle == "link" {
+              Button(action: {
+                CepheusKeyboardIsDisplaying = true
+              }, label: {
+                if safeStyle == "field" {
+                  HStack {
+                    if input.wrappedValue.isEmpty {
+                      Text(prompt)
+                        .foregroundStyle(.secondary)
+                    } else {
+                      Text(isSecure ? dottedText : input.wrappedValue)
                     }
-                    .onChange(of: input.wrappedValue) {
-                        dottedText = CepheusKeyboardLettersToDots(input.wrappedValue)
+                    Spacer()
+                  }
+                } else {
+                  label()
+                }
+              })
+            } else if safeStyle == "page" || safeStyle == "field-page"  {
+              NavigationLink(destination: {
+                CepheusKeyboardMainView(input: input, style: safeStyle, defaultLanguage: defaultLanguage, isSecure: isSecure, languageDisallowRules: languageDisallowRules, allowEmojis: allowEmojis, displayingSecureTextIsAllowed: displayingSecureTextIsAllowed, prompt: prompt, onSubmit: onSubmit)
+              }, label: {
+                if safeStyle == "page" {
+                  label()
+                } else {
+                  HStack {
+                    if input.wrappedValue.isEmpty {
+                      Text(prompt)
+                        .foregroundStyle(.secondary)
+                    } else {
+                      Text(isSecure ? dottedText : input.wrappedValue)
                     }
-                    .onChange(of: CepheusKeyboardIsDisplaying) {
-                        if !CepheusKeyboardIsDisplaying {
-                            onSubmit()
-                        }
-                    }
-                    .sheet(isPresented: $CepheusKeyboardIsDisplaying, content: {
-                        CepheusKeyboardMainView(input: input, defaultLanguage: defaultLanguage, isSecure: isSecure, languageDisallowRules: languageDisallowRules, allowEmojis: allowEmojis, displayingSecureTextIsAllowed: displayingSecureTextIsAllowed, prompt: prompt, stringPrompt: stringPrompt)
-                    })
-                })
-            } else {
-                Text("Cepheus.unavailable", bundle: .module)
+                    Spacer()
+                  }
+                }
+              })
+            } else if safeStyle == "direct" {
+              CepheusKeyboardMainView(input: input, style: safeStyle, defaultLanguage: defaultLanguage, isSecure: isSecure, languageDisallowRules: languageDisallowRules, allowEmojis: allowEmojis, displayingSecureTextIsAllowed: displayingSecureTextIsAllowed, prompt: prompt, onSubmit: onSubmit)
             }
+          }
+          .onChange(of: input.wrappedValue) {
+            dottedText = CepheusKeyboardLettersToDots(input.wrappedValue)
+          }
         } else {
-            if !isSecure {
-                TextField(text: input, label: {
-                    if let prompt {
-                        Text(prompt)
-                    } else if let stringPrompt {
-                        Text(stringPrompt)
-                    }
-                })
-                .autocorrectionDisabled(!autoCorrectionIsEnabled)
-                .onSubmit {
-                    onSubmit()
-                }
-                //        TextField(prompt, text: $input)
-            } else {
-                SecureField(text: input, label: {
-                    if let prompt {
-                        Text(prompt)
-                    } else if let stringPrompt {
-                        Text(stringPrompt)
-                    }
-                })
-                .autocorrectionDisabled(!autoCorrectionIsEnabled)
-                .onSubmit {
-                    onSubmit()
-                }
-                //        SecureField(prompt, text: $input)
+          Text(String(localized: "Cepheus.unavailable", bundle: Bundle.module))
+        }
+      } else {
+        if !isSecure {
+          if safeStyle != "field" && safeStyle != "field-page" {
+            TextFieldLink(prompt: Text(prompt), label: {
+              label()
+            }, onSubmit: { output in
+              input.wrappedValue = output
+              onSubmit()
+            })
+          } else {
+            TextField(text: input, label: {Text(prompt)})
+              .autocorrectionDisabled(!autoCorrectionIsEnabled)
+              .onSubmit {
+                onSubmit()
+              }
+          }
+          //        TextField(prompt, text: $input)
+        } else {
+          SecureField(text: input, label: {Text(prompt)})
+            .autocorrectionDisabled(!autoCorrectionIsEnabled)
+            .onSubmit {
+              onSubmit()
             }
         }
+      }
     }
+    .onAppear {
+      if style != "field" && style != "link" && style != "page" && style != "direct" && style != "field-page" {
+        safeStyle = "field"
+      } else {
+        safeStyle = style
+      }
+    }
+    .sheet(isPresented: $CepheusKeyboardIsDisplaying, content: {
+      CepheusKeyboardMainView(input: input, style: safeStyle, defaultLanguage: defaultLanguage, isSecure: isSecure, languageDisallowRules: languageDisallowRules, allowEmojis: allowEmojis, displayingSecureTextIsAllowed: displayingSecureTextIsAllowed, prompt: prompt, onSubmit: onSubmit)
+    })
+  }
 }
 
 struct CepheusKeyboardMainView: View {
-    //INPUTS
-    @Binding var input: String //The input text
-    var defaultLanguage: String =  "en-qwerty" //The default language
-    var isSecure: Bool = false //Yes for entering passwords
-    var languageDisallowRules: String = "none" //Disallow languages //none, deny-all, deny-Latin, deny-CJK, English-only
-    var allowEmojis: Bool = true //Allow to enter emoji or not
-    var displayingSecureTextIsAllowed: Bool = true //Determine if the user is able to check password
-    var prompt: LocalizedStringKey?
-    var stringPrompt: String?
-    
-    //LANGUAGES
-    let languageCodes = ["en-qwerty", "zh-hans-pinyin"]
-    @State var keyboardLanguage = "en-qwerty"
-    //TEXT STATUS
-    @State var textField = ""
-    @State var secureField = ""
-    @State var keyboardState = 0
-    @State var capitalLetterIsTyped = false
-    @State var capsLockIsOn = false
-    @State var cursor = 0
-    //SHEETS
-    @State var languageSheetIsDisplaying = false
-    @State var emojiSheetIsDisplaying = false
-    //PINYIN
-    @State var inputPinyin = ""
-    @State var outputCharacter = ""
-    @State var pinyinLocation = -1
-    //DISMISS
-    @Environment(\.dismiss) var dismiss
-    var body: some View {
-        if #available(watchOS 10.0, *) {
-            VStack {
-                CepheusKeyboardTextFieldPreviewView(textField: $textField, cursor: $cursor, pinyinLocation: $pinyinLocation, pinyinInput: $inputPinyin, language: $keyboardLanguage, isSecure: isSecure, displayingSecureTextIsAllowed: displayingSecureTextIsAllowed, prompt: prompt, stringPrompt: stringPrompt)
-                if keyboardLanguage == "zh-hans-pinyin" {
-                    CepheusPiyin(input: $textField, inputPinyin: $inputPinyin, pinyinLocation: $pinyinLocation, cursor: $cursor)
-                }
-                Spacer()
-                    .frame(height: screenHeight/((keyboardLanguage == "zh-hans-pinyin") ? 50 : 15))
-                CepheusKeyboardTextKeysView(textField: $textField, cursor: $cursor, language: $keyboardLanguage, pinyinLocation: $pinyinLocation, inputPinyin: $inputPinyin)
-                Spacer()
-                
-                HStack {
-                    Button(action: {
-                        languageSheetIsDisplaying = true
-                    }, label: {
-                        Image(systemName: "globe")
-                    })
-                    .sheet(isPresented: $languageSheetIsDisplaying, content: {
-                        CepheusKeyboardLanguagePickerView(language: $keyboardLanguage, textField: $textField, cursor: $cursor, languageDisallowRules: languageDisallowRules)
-                    })
-                    Spacer()
-                    if inputPinyin.isEmpty {
-                        Button(action: {
-                            textField = CepheusKeyboardAddLetter(" ", textField: textField, cursor: cursor)
-                            cursor += 1
-                        }, label: {
-                            Text("Cepheus.space", bundle: .module)
-                        })
-                    } else {
-                        Button(action: {
-                            pinyinLocation += 1
-                            inputPinyin = backspace(textField: inputPinyin, cursor: 1)
-                        }, label: {
-                            Text("Cepheus.pinyin.ignore", bundle: .module)
-                        })
-                    }
-                    Spacer()
-                    Button(action: {
-                        emojiSheetIsDisplaying = true
-                    }, label: {
-                        Image(uiImage: UIImage(data: Data(base64Encoded: emojiSymbol)!)!.withRenderingMode(.alwaysTemplate)) //EDITED
-                            .resizable()
-                            .foregroundStyle(Color.white)
-                            .frame(width: 18, height: 18)
-                            .sheet(isPresented: $emojiSheetIsDisplaying, content: {
-                                CepheusKeyboardEmojiView(textField: $textField, cursor: $cursor)
-                            })
-                    })
-                    .disabled(!(allowEmojis && !isSecure))
-                }
-                .offset(y: -10)
-                .frame(width: screenWidth*0.8)
-            }
-            .buttonStyle(.plain)
-            .onAppear {
-                if !languageCodes.contains(defaultLanguage) {
-                    keyboardLanguage = "en-qwerty"
-                } else {
-                    keyboardLanguage = defaultLanguage
-                }
-                textField = input //The editable text is starting in textField not input.
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading, content: {
-                    Button(action: {
-                        dismiss() //Simply close the sheet.
-                    }, label: {
-                        Image(systemName: "xmark")
-                    })
-                })
-                ToolbarItem(placement: .confirmationAction, content: {
-                    Button(action: {
-                        input = textField //Save the content then close.
-                        dismiss()
-                    }, label: {
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(.tint)
-                    })
-                })
-            }
-            .ignoresSafeArea(edges: .bottom)
-            .onChange(of: inputPinyin) {
-                if inputPinyin.isEmpty {
-                    pinyinLocation = -1
-                }
-            }
-            //    .ignoresSafeArea()
+  //INPUTS
+  @Binding var input: String //The input text
+  var style: String = "field" //The keyboard displayed style
+  var defaultLanguage: String = "en-qwerty" //The default language
+  var isSecure: Bool = false //Yes for entering passwords
+  var languageDisallowRules: String = "none" //Disallow languages //none, deny-all, deny-Latin, deny-CJK, English-only
+  var allowEmojis: Bool = true //Allow to enter emoji or not
+  var displayingSecureTextIsAllowed: Bool = true //Determine if the user is able to check password
+  var prompt: LocalizedStringResource = ""
+  var onSubmit: () -> Void = {}
+  //  var localizedByKeyboardLanguage = CepheusLocalizedByKeyboardLanguage
+  
+  //LANGUAGES
+  let languageCodes = ["en-qwerty", "zh-hans-pinyin"]
+  let localizedSpaces = ["en-qwerty": "Space", "zh-hans-pinyin": "空格"]
+  @AppStorage("CepheusLocalizedByKeyboardLanguage") var CepheusLocalizedByKeyboardLanguage = true
+  @AppStorage("CepheusSaveWhenDismissed") var CepheusSaveWhenDismissed = false
+  @State var keyboardLanguage = "en-qwerty"
+  //TEXT STATUS
+  @State var textField = ""
+  @State var secureField = ""
+  @State var keyboardState = 0
+  @State var capitalLetterIsTyped = false
+  @State var capsLockIsOn = false
+  @State var cursor = 0
+  //SHEETS
+  @State var languageSheetIsDisplaying = false
+  @State var emojiSheetIsDisplaying = false
+  //PINYIN
+  @State var inputPinyin = ""
+  @State var outputCharacter = ""
+  @State var pinyinLocation = -1
+  //DISMISS
+  @Environment(\.dismiss) var dismiss
+  var body: some View {
+    if #available(watchOS 10.0, *) {
+      VStack {
+        CepheusKeyboardTextFieldPreviewView(textField: $textField, cursor: $cursor, pinyinLocation: $pinyinLocation, pinyinInput: $inputPinyin, language: $keyboardLanguage, isSecure: isSecure, displayingSecureTextIsAllowed: displayingSecureTextIsAllowed, prompt: prompt)
+        if keyboardLanguage == "zh-hans-pinyin" {
+          CepheusPiyin(input: $textField, inputPinyin: $inputPinyin, pinyinLocation: $pinyinLocation, cursor: $cursor)
+        }
+        Spacer()
+          .frame(height: screenHeight/((keyboardLanguage == "zh-hans-pinyin") ? 50 : 15))
+        CepheusKeyboardTextKeysView(textField: $textField, cursor: $cursor, language: $keyboardLanguage, pinyinLocation: $pinyinLocation, inputPinyin: $inputPinyin)
+        Spacer()
+        
+        HStack {
+          Button(action: {
+            languageSheetIsDisplaying = true
+          }, label: {
+            Image(systemName: "globe")
+          })
+          .sheet(isPresented: $languageSheetIsDisplaying, content: {
+            CepheusKeyboardLanguagePickerView(language: $keyboardLanguage, textField: $textField, cursor: $cursor, languageDisallowRules: languageDisallowRules)
+          })
+          Spacer()
+          if inputPinyin.isEmpty {
+            Button(action: {
+              textField = CepheusKeyboardAddLetter(" ", textField: textField, cursor: cursor)
+              cursor += 1
+            }, label: {
+              Text((CepheusLocalizedByKeyboardLanguage ? localizedSpaces[keyboardLanguage] : String(localized: "Cepheus.space", bundle: Bundle.module)) ?? "Space")
+            })
+          } else {
+            Button(action: {
+              pinyinLocation += 1
+              inputPinyin = backspace(textField: inputPinyin, cursor: 1)
+            }, label: {
+              Text(CepheusLocalizedByKeyboardLanguage ? "忽略" : String(localized: "Cepheus.pinyin.ignore", bundle: Bundle.module))
+            })
+          }
+          Spacer()
+          Button(action: {
+            emojiSheetIsDisplaying = true
+          }, label: {
+            Image(uiImage: UIImage(data: Data(base64Encoded: emojiSymbol)!)!.withRenderingMode(.alwaysTemplate)) //EDITED
+              .resizable()
+              .foregroundStyle(Color.white)
+              .frame(width: 18, height: 18)
+              .sheet(isPresented: $emojiSheetIsDisplaying, content: {
+                CepheusKeyboardEmojiView(textField: $textField, cursor: $cursor)
+              })
+          })
+          .disabled(!(allowEmojis && !isSecure))
         }
     }
     func backspace(textField: String, cursor: Int) -> String {
@@ -274,8 +227,41 @@ struct CepheusKeyboardMainView: View {
         for letter in textField {
             singleLetters.append(letter)
         }
-        if cursor-1 >= 0 {
-            singleLetters.remove(at: cursor-1)
+        textField = input //The editable text is starting in textField not input.
+      }
+      .toolbar {
+        if style != "page" && style != "field-page" {
+          ToolbarItem(placement: .topBarLeading, content: {
+            Button(action: {
+              dismiss() //Simply close the sheet.
+            }, label: {
+              Image(systemName: "xmark")
+            })
+          })
+          if !CepheusSaveWhenDismissed {
+            ToolbarItem(placement: .confirmationAction, content: {
+              Button(action: {
+                input = textField //Save the content then close.
+                onSubmit()
+                dismiss()
+              }, label: {
+                Image(systemName: "checkmark")
+                  .foregroundStyle(.tint)
+              })
+            })
+          }
+        }
+      }
+      .onDisappear(perform: {
+        if CepheusSaveWhenDismissed || style == "page" || style == "field-page" {
+          input = textField
+          onSubmit()
+        }
+      })
+      .ignoresSafeArea(edges: .bottom)
+      .onChange(of: inputPinyin) {
+        if inputPinyin.isEmpty {
+          pinyinLocation = -1
         }
         return singleLetters.map{String($0)}.joined()
     }
@@ -673,64 +659,79 @@ struct CepheusKeyboardSingleKeyRowView: View {
 }
 
 struct CepheusKeyboardLanguagePickerView: View {
-    let languageCodes = ["en-qwerty", "zh-hans-pinyin"]
-    let languageIcons = ["en-qwerty": "En", "zh-hans-pinyin": "拼"]
-    let languageNames: [String: LocalizedStringResource] = ["en-qwerty": LocalizedStringResource("Language.english", bundle: .atURL(Bundle.module.bundleURL)), "zh-hans-pinyin": LocalizedStringResource("Language.chinese-simplified", bundle: .atURL(Bundle.module.bundleURL))]
-    let languageFootnotes: [String: LocalizedStringResource] = ["en-qwerty": LocalizedStringResource("Language.footnote.qwerty", bundle: .atURL(Bundle.module.bundleURL)), "zh-hans-pinyin": LocalizedStringResource("Language.footnote.pinyin", bundle: .atURL(Bundle.module.bundleURL))]
-    let languageTypes = ["en-qwerty": "Latin", "zh-hans-pinyin": "CJK"]
-    @Binding var language: String
-    @Binding var textField: String
-    @Binding var cursor: Int
-    @Environment(\.dismiss) var dismiss
-    var languageDisallowRules: String = "none"
-    var body: some View {
-        if #available(watchOS 10.0, *) {
-            List {
-                ForEach(languageCodes, id: \.self) { singleLanguage in
-                    if shouldDispalyLanguage(language: singleLanguage, rules: languageDisallowRules) {
-                        Button(action: {
-                            language = singleLanguage
-                            dismiss()
-                        }, label: {
-                            HStack {
-                                Text(languageIcons[singleLanguage] ?? "Aa")
-                                    .font(.system(size: 20))
-                                    .foregroundStyle(.tint)
-                                    .fontDesign(.rounded)
-                                VStack(alignment: .leading) {
-                                    Text(languageNames[singleLanguage] ?? "Unknown")
-                                    Text(languageFootnotes[singleLanguage] ?? "\(language)")
-                                        .foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                if language == singleLanguage {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(.tint)
-                                }
-                            }
-                        })
-                    }
+  let languageCodes = ["en-qwerty", "zh-hans-pinyin"]
+  let languageIcons = ["en-qwerty": "En", "zh-hans-pinyin": "拼"]
+  let languageNames: [String: LocalizedStringResource] = ["en-qwerty": LocalizedStringResource("Language.english", bundle: .atURL(Bundle.module.bundleURL)), "zh-hans-pinyin": LocalizedStringResource("Language.chinese-simplified", bundle: .atURL(Bundle.module.bundleURL))]
+  let languageFootnotes: [String: LocalizedStringResource] = ["en-qwerty": LocalizedStringResource("Language.footnote.qwerty", bundle: .atURL(Bundle.module.bundleURL)), "zh-hans-pinyin": LocalizedStringResource("Language.footnote.pinyin", bundle: .atURL(Bundle.module.bundleURL))]
+  let languageTypes = ["en-qwerty": "Latin", "zh-hans-pinyin": "CJK"]
+  @Binding var language: String
+  @Binding var textField: String
+  @Binding var cursor: Int
+  @Environment(\.dismiss) var dismiss
+  var languageDisallowRules: String = "none"
+  var body: some View {
+    if #available(watchOS 10.0, *) {
+      NavigationStack {
+        List {
+          ForEach(languageCodes, id: \.self) { singleLanguage in
+            if shouldDispalyLanguage(language: singleLanguage, rules: languageDisallowRules) {
+              Button(action: {
+                language = singleLanguage
+                dismiss()
+              }, label: {
+                HStack {
+                  Text(languageIcons[singleLanguage] ?? "Aa")
+                    .font(.system(size: 20))
+                    .foregroundStyle(.tint)
+                    .fontDesign(.rounded)
+                  VStack(alignment: .leading) {
+                    Text(languageNames[singleLanguage] ?? "Unknown")
+                    Text(languageFootnotes[singleLanguage] ?? "\(language)")
+                      .foregroundStyle(.secondary)
+                  }
+                  Spacer()
+                  if language == singleLanguage {
+                    Image(systemName: "checkmark")
+                      .foregroundStyle(.tint)
+                  }
                 }
-                if languageDisallowRules == "deny-all" {
-                    Text("Language.none-available", bundle: .module)
-                        .foregroundStyle(.secondary)
-                }
-                TextFieldLink(prompt: Text("Languange.use-system-keyboard.prompt", bundle: .module), label: {
-                    HStack {
-                        Image(systemName: "keyboard")
-                            .font(.system(size: 20))
-                            .foregroundStyle(.tint)
-                            .fontDesign(.rounded)
-                        VStack(alignment: .leading) {
-                            Text("Language.use-system-keyboard", bundle: .module)
-                        }
-                    }
-                }, onSubmit: { output in
-                    textField = CepheusKeyboardAddLetter(output, textField: textField, cursor: cursor)
-                    //          textField = output
-                })
+              })
             }
-            .navigationTitle(Text("Language.title", bundle: .module))
+          }
+          if languageDisallowRules == "deny-all" {
+            Text(String(localized: "Language.none-available", bundle: Bundle.module))
+              .foregroundStyle(.secondary)
+          }
+          TextFieldLink(prompt: Text(String(localized: "Languange.use-system-keyboard.prompt", bundle: Bundle.module)), label: {
+            CepheusLabel(localizedStringKey: "Language.use-system-keyboard", labelIcon: "keyboard", labelIconIsSymbol: true)
+          }, onSubmit: { output in
+            textField = CepheusKeyboardAddLetter(output, textField: textField, cursor: cursor)
+            //          textField = output
+          })
+          NavigationLink(destination: {
+            CepheusSettingsView()
+          }, label: {
+            CepheusLabel(localizedStringKey: "Language.settings", labelIcon: "info.circle", labelIconIsSymbol: true)
+          })
+        }
+      }
+      .navigationTitle(Text(String(localized: "Language.title", bundle: Bundle.module)))
+    }
+  }
+  
+  func shouldDispalyLanguage(language: String, rules: String) -> Bool {
+    if rules == "none" {
+      return true
+    } else if rules == "deny-all" {
+      return false
+    } else {
+      if language == "en-qwerty" && rules.contains("only-English") {
+        return true
+      } else if languageTypes[language] == "Latin" {
+        if rules.contains("deny-Latin") {
+          return false
+        } else {
+          return true
         }
     }
     func shouldDispalyLanguage(language: String, rules: String) -> Bool {
@@ -758,6 +759,32 @@ struct CepheusKeyboardLanguagePickerView: View {
             }
         }
     }
+}
+
+struct CepheusLabel: View {
+  var localizedStringKey: String.LocalizationValue = "Placeholder"
+  var labelIcon: String = "Aa"
+  var labelIconIsSymbol: Bool = true
+  var body: some View {
+    if #available(watchOS 9.1, *) {
+      HStack {
+        Group {
+          if labelIconIsSymbol {
+            Image(systemName: labelIcon)
+          } else {
+            Text(labelIcon)
+          }
+        }
+        .font(.system(size: 20))
+        .foregroundStyle(.tint)
+        .fontDesign(.rounded)
+        VStack(alignment: .leading) {
+          Text(String(localized: localizedStringKey, bundle: Bundle.module))
+        }
+      }
+      
+    }
+  }
 }
 
 func CepheusKeyboardAddLetter(_ letter: String, textField: String, cursor: Int) -> String {
