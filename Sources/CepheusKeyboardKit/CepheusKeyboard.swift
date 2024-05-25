@@ -14,7 +14,7 @@ let screenHeight = WKInterfaceDevice.current().screenBounds.size.height
 public struct CepheusKeyboard<L: View>: View {
   //Configurations
   public var input: Binding<String>
-  public var prompt: LocalizedStringResource = LocalizedStringResource("Cepheus.prompt", bundle: .atURL(Bundle.module.bundleURL))
+  public var prompt: LocalizedStringKey?
   public var CepheusIsEnabled: Bool = true
   public var style: String = "field"
   public var defaultLanguage: String =  "en-qwerty"
@@ -29,7 +29,7 @@ public struct CepheusKeyboard<L: View>: View {
   @State var CepheusKeyboardIsDisplaying = false
   @State var dottedText = ""
   @State var safeStyle = "field"
-  public init(input: Binding<String>, prompt: LocalizedStringResource = "Cepheus Keyboard", CepheusIsEnabled: Bool = true, style: String = "field", defaultLanguage: String = "en-qwerty", languageDisallowRules: String = "none", allowEmojis: Bool = true, isSecure: Bool = false, displayingSecureTextIsAllowed: Bool = true, CepheusKeyboardIsDisplaying: Bool = false, dottedText: String = "", autoCorrectionIsEnabled: Bool = true, onSubmit: @escaping () -> Void = {}, label: @escaping () -> L = {Text("Cepheus Keyboard")}) {
+  public init(input: Binding<String>, prompt: LocalizedStringKey? = "Cepheus Keyboard", CepheusIsEnabled: Bool = true, style: String = "field", defaultLanguage: String = "en-qwerty", languageDisallowRules: String = "none", allowEmojis: Bool = true, isSecure: Bool = false, displayingSecureTextIsAllowed: Bool = true, CepheusKeyboardIsDisplaying: Bool = false, dottedText: String = "", autoCorrectionIsEnabled: Bool = true, onSubmit: @escaping () -> Void = {}, label: @escaping () -> L = {Text("Cepheus Keyboard")}) {
     self.input = input
     self.prompt = prompt
     self.CepheusIsEnabled = CepheusIsEnabled
@@ -144,7 +144,7 @@ struct CepheusKeyboardMainView: View {
   var languageDisallowRules: String = "none" //Disallow languages //none, deny-all, deny-Latin, deny-CJK, English-only
   var allowEmojis: Bool = true //Allow to enter emoji or not
   var displayingSecureTextIsAllowed: Bool = true //Determine if the user is able to check password
-  var prompt: LocalizedStringResource = ""
+  var prompt: LocalizedStringKey?
   var onSubmit: () -> Void = {}
   //  var localizedByKeyboardLanguage = CepheusLocalizedByKeyboardLanguage
   
